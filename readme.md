@@ -6,13 +6,13 @@
 - 그리고 수정 보완할 것!!, but 핵심 로직은 바꾸면 X
 
 ### 진행순서
-- 도메인 생성
-- ExceptionHandling
-- Security 설정
-- logger 세팅
+- 도메인 생성 (완)
+- ExceptionHandling (완)
+- Security 설정 (완)
+- logger 세팅 (완)
+- 회원가입 (완) - 테스트 (완)
+- 로그인 (완)
 - DTO Validation Adop
-- 회원가입
-- 로그인
 - JWT 로그인으로 변경 // jsp 사용시 X
 - 서비스 기능 만들기
 

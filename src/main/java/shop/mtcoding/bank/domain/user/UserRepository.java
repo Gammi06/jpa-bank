@@ -13,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u where username = :username")
     Optional<User> findByUsername(@Param("username") String username);
+
 }
+
+// JPA에서 이미 만들어진 쿼리들은 테스트할 필요 없음
