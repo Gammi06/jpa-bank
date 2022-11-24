@@ -1,16 +1,20 @@
 package shop.mtcoding.bank.config.exception;
 
 import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 
 @Getter
 public class CustomValidationApiException extends RuntimeException {
 
-    private final int httpStatusCode = 400;
+    private final HttpStatus httpStatus;
     private Map<String, String> erreMap;
 
     public CustomValidationApiException(Map<String, String> errorMap) {
         super("유효성 검사 실패");
         this.erreMap = errorMap;
+        this.httpStatus = HttpStatus.BAD_REQUEST;
     }
 }
