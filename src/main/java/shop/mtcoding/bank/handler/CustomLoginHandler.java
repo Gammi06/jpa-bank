@@ -33,12 +33,13 @@ public class CustomLoginHandler implements AuthenticationSuccessHandler, Authent
 
                 // 세션이 생겼는지 확인
                 LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                LoginRespDto loginRespDto = new LoginRespDto(loginUser.getUser());
 
                 ObjectMapper om = new ObjectMapper();
-                ResponseDto<?> responseDto = new ResponseDto<>("로그인 성공", new LoginRespDto(loginUser.getUser()));
-                String responseBody = om.writeValueAsString(responseDto); // json변환
+                ResponseDto<?> responseDto = new ResponseDto<>("로그인 성공", loginRespDto);
+                String responseBody = om.writeValueAsString(responseDto);
                 response.setContentType("application/json; charset=utf-8");
-                response.setStatus(201);
+                response.setStatus(200);
                 response.getWriter().println(responseBody);
         }
 

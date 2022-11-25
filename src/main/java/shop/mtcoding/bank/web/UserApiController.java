@@ -25,7 +25,7 @@ public class UserApiController {
 
     @GetMapping("/user/session")
     public String userSession(@AuthenticationPrincipal LoginUser loginUser) {
-        return "username: " + loginUser.getUsername();
+        return "username : " + loginUser.getUsername();
     }
 
     @PostMapping("/join")

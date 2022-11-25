@@ -1,22 +1,25 @@
 package shop.mtcoding.bank.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import shop.mtcoding.bank.config.enums.UserEnum;
-import shop.mtcoding.bank.handler.CustomLoginHandler;
+import shop.mtcoding.bank.config.jwt.JwtAuthenticationFilter;
+import shop.mtcoding.bank.config.jwt.JwtAuthorizationFilter;
 
 // SecurityFilterChain : 미리 만들어진 14개의 필터 < 네거티브 정책
 @Configuration // 재등록
 public class SecurityConfig {
 
-    // tip : Configuration에서 생성자 주입을 Autowired 사용하기
-    @Autowired
-    private CustomLoginHandler customLoginHandler;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     // 스프링 Security는 회원가입할때 해쉬를 사용하지 않으면 막힘
     @Bean
@@ -24,26 +27,33 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // 커스텀
+    public class MyCustomDsl extends AbstractHttpConfigurer<MyCustomDsl, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
+            log.debug("디버그 : SecurityConfig의 configure");
+            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+            http.addFilter(new JwtAuthenticationFilter(authenticationManager));
+            http.addFilter(new JwtAuthorizationFilter(authenticationManager));
+        }
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // iframe 거부
+        log.debug("디버그 : SecurityConfig의 filterChain");
         http.headers().frameOptions().disable();
-        http.csrf().disable(); // 포스트맨 사용하려고
+        http.csrf().disable();
+
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.formLogin().disable();
+        http.httpBasic().disable();
+        http.apply(new MyCustomDsl());
 
         http.authorizeHttpRequests()
-                .antMatchers("/api/transaction/**").authenticated() // 로그인
-                .antMatchers("/api/user/**").authenticated() // 로그인
-                .antMatchers("/api/account/**").authenticated() // 로그인
-                .antMatchers("/api/admin/**").hasRole("ROLE_" + UserEnum.ADMIN) // 권한: Admin
-                .anyRequest().permitAll()
-                .and() // 문장이 다 끝나면 작성
-                .formLogin() // 디폴트: x-www-form-urlencoded (post)로 되어있음
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .loginProcessingUrl("/api/login") // 로그인 링크
-                .successHandler(customLoginHandler) // 로그인 성공시
-                .failureHandler(customLoginHandler); // 로그인 실패시
+                .antMatchers("/api/transaction/**").authenticated()
+                .antMatchers("/api/user/**").authenticated()
+                .antMatchers("/api/account/**").authenticated()
+                .antMatchers("/api/admin/**").hasRole("ROLE_" + UserEnum.ADMIN)
+                .anyRequest().permitAll();
 
         return http.build();
     }

@@ -14,6 +14,13 @@ public class UserReqDto {
 
     @Getter
     @Setter
+    public static class LoginReqDto {
+        private String username;
+        private String password;
+    }
+
+    @Getter
+    @Setter
     public static class JoinReqDto {
 
         @Size(min = 2, max = 20)
